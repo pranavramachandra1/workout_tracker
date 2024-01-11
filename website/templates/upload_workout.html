@@ -1,0 +1,61 @@
+{% extends "base.html" %} {% block title %} Split Viewer {% endblock %}
+
+{%block content%}
+    <br />
+
+    <h2> Upload Your Workout! </h2>
+    <br />
+    
+    <h4> {{user.first_name}}, below is the next workout in your split:</h4>
+
+    <br />
+    <h4> Workout: {{user.get_active_split().get_curent_workout(False).workout_name}}</h4>
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">Movement</th>
+                <th scope="col"># of Sets</th>
+                <th scope="col"># of Reps</th>
+            </tr>
+
+            <style>
+                .table th, .table td {
+                    width: 33.33%; /* Divide table width into three equal parts */
+                }
+            </style>
+            
+        </thead>
+
+        <tbody>
+            {% for mov in user.get_active_split().get_curent_workout(False).movements %}
+                <tr>
+                    <th scope="row">{{mov.mov_name}}</th>
+                    <td>{{mov.sets}}</td>
+                    <td>{{mov.reps}}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>Uploading Instructions:</h3>
+    <p>1. Click the button below to download the template to enter your workout data.</p>
+    <button class="btn btn-primary" id="downloadTemplate" onclick="location.href='{{ url_for('upload_workout.download_template') }}'"> Download Your Template Here</button>
+    <br />
+    <br />
+    <p>2. Your tempalte should be an excel file. ONLY fill in the table with the weight and number of repetitions for in each set for each movement.</p>
+    <h5>How to Fill Out Your Template</h5>
+    <img src="{{ url_for('static', filename='images/template_instructions.jpg') }}" class="rounded float-left" alt="Template Instructions">
+
+    <p>3. Upload your template:</p>
+    <form method="POST" enctype="multipart/form-data">
+        <div class="form-group">
+          <label for="submitWorkoutData">Submit your completed data HERE:</label>
+          <input type="file" class="form-control-file" id="userUploadedWorkoutData" name="userUploadedWorkoutData" required>
+        </div>
+
+        <button class = "btn btn-primary" id="submitWorkoutData" type="submit">Upload Workout</button>
+    </form>
+    <br />
+    <br />
+
+{% endblock %}

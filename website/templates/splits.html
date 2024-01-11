@@ -1,0 +1,71 @@
+{% extends "base.html" %} {% block title %}Splits{% endblock %}
+
+{% block content %}
+    <h3 align="center">Workout Creator</h3>
+    <form method="POST" id="initialForm">
+        <div class="form-group">
+            <label for="workout_name">Workout Name:</label>
+            <input
+                type="text"
+                class="form-control"
+                id="workout_name"
+                name="workout_name"
+                placeholder="Workout Name"
+                required/>
+        </div>
+        <div class="form-group">
+            <label for="num_movements">Number of Movements In Workout:</label>
+            <input
+                type="number"
+                class="form-control"
+                id="num_movements"
+                name="num_movements"
+                placeholder="Number of Movements in Workout"
+                required/>
+        </div>
+
+        <div id="dynamicFields"></div>
+
+        <button type="submit" class="btn btn-primary" id="workout_button">Generate Splits</button>
+        <button type="submit" class="btn btn-primary" id="finalSubmit" style="display:none;">Create Workout</button>
+    </form>
+    <br />
+    <br />
+
+    <script>
+        document.getElementById('initialForm').onsubmit = function(event) {
+            var numMovements = document.getElementById('num_movements').value;
+
+            // Check if dynamic fields are already generated
+            if (document.getElementById('dynamicFields').innerHTML.trim() === '') {
+                
+                document.getElementById('workout_button').style.display = 'none';
+                event.preventDefault(); // Prevent form from submitting
+
+                var dynamicFields = document.getElementById('dynamicFields');
+                dynamicFields.innerHTML = '';
+
+                for (var i = 0; i < numMovements; i++) {
+                    dynamicFields.innerHTML += `
+                        <div class="movement-set">
+                            <div class="form-group">
+                                <label>Movement Name ${i + 1}:</label>
+                                <input type="text" class="form-control" name="movement_name${i}" placeholder="Enter movement name" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Num. Sets for Movement ${i + 1}:</label>
+                                <input type="number" class="form-control" name="num_sets_mvmnt${i}" placeholder="Enter number of sets" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Num. Reps for Movement ${i + 1}:</label>
+                                <input type="number" class="form-control" name="num_reps_mvmnt${i}" placeholder="Enter number of reps" required>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                document.getElementById('finalSubmit').style.display = 'block';
+            }
+        };
+    </script>
+{% endblock %}

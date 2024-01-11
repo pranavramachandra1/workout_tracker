@@ -1,0 +1,291 @@
+{% extends "base.html" %} {% block title %} Split Viewer {% endblock %}
+
+{%block content%}
+    <br />
+    <h1 align = "center"> Split Viewer </h1>
+    <br />
+    {% for split in user.splits if split.is_active%}
+        <h2>Active Split: {{split.split_name}}</h2>
+        {% for wkrt in split.workouts %}
+            <h3> 
+                {{ wkrt.workout_name }}
+            </h3>
+            <br />
+            
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">Movement</th>
+                        <th scope="col"># of Sets</th>
+                        <th scope="col"># of Reps</th>
+                    </tr>
+
+                    <style>
+                        .table th, .table td {
+                            width: 33.33%; /* Divide table width into three equal parts */
+                        }
+                    </style>
+                    
+                </thead>
+
+                <tbody>
+                    {% for mov in wkrt.movements %}
+                        <tr>
+                            <th scope="row">{{mov.mov_name}}</th>
+                            <td>{{mov.sets}}</td>
+                            <td>{{mov.reps}}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <br />
+        {% endfor %}
+    {% endfor %}
+    
+    <div class="buttons">
+        <button class="btn btn-primary" id="showAllWorkouts"> Show All Workouts</button>
+        <button class="btn btn-primary" id="showAllSplits"> Show All Splits</button>
+        <button class="btn btn-primary" id="createNewSplit"> Create New Split</button>
+        <button class="btn btn-primary" id="setActiveSplit"> Set Active Split</button>
+    </div>
+
+    <div id="allWorkouts" style="display:none;">
+        <br />
+        <h2>All of {{user.first_name}}'s Workouts:</h2>
+
+        {% for wkrt in user.workouts %}
+            <h3> 
+                {{ wkrt.workout_name }}
+            </h3>
+            <br />
+            
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">Movement</th>
+                        <th scope="col"># of Sets</th>
+                        <th scope="col"># of Reps</th>
+                    </tr>
+
+                    <style>
+                        .table th, .table td {
+                            width: 33.33%; /* Divide table width into three equal parts */
+                        }
+                    </style>
+                    
+                </thead>
+
+                <tbody>
+                    {% for mov in wkrt.movements %}
+                        <tr>
+                            <th scope="row">{{mov.mov_name}}</th>
+                            <td>{{mov.sets}}</td>
+                            <td>{{mov.reps}}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <br />
+        {% endfor %}
+    </div>
+
+    <div id="allSplits" style="display:none">
+        <br />
+        <h2>All of {{user.first_name}}'s Splits:</h2>
+
+        {% for split in user.splits %}
+
+            {% if split.is_active%}
+                <h3> 
+                    {{ split.split_name }} (Active Split)
+                </h3>
+            {% else %}
+                <h3> 
+                    {{ split.split_name }}
+                </h3>
+            {% endif %}
+            <br />
+            
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">Workout Name</th>
+                    </tr>
+
+                    <style>
+                        .table th, .table td {
+                            width: 33.33%; /* Divide table width into three equal parts */
+                        }
+                    </style>
+                    
+                </thead>
+
+                <tbody>
+                    {% for wkrt in split.workouts %}
+                        <tr>
+                            <th scope="row">{{wkrt.workout_name}}</th>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <br />
+        {% endfor %}
+    </div>
+
+    <form method="POST">
+        <div id="createSplit" style="display:none">
+            <br />
+            <h3>Create a New Split!</h3>
+            <div class="form-group">
+                <label for="split_name">Name for Split:</label>
+                <input type="text" class="form-control" id="split_name" name="split_name" placeholder="Name for Split" required/>
+            </div>
+            
+            <div id="splitFormContainer">
+                <div id="creatingSplitForm1" class="form-row align-items-center">
+                    <div class="form-group col-md-4">
+                        <label for="inputWrkt1">Select Workout 1</label>
+                        <select id="inputWrkt1" class="form-control" name = "workout1" required>
+                            <option value="" selected disabled>Choose a Workout</option>
+                            {% for wkrt in user.workouts %}
+                                <option> {{ wkrt.workout_name }} </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>            
+            </div>
+            
+            
+            <div id="addRemoveWorkoutButtons" class="buttons">
+                <button class="btn btn-primary" id="addOption"> Add Workout </button>
+                <button class="btn btn-primary" id="remOption"> Remove Workout </button>
+            </div>
+
+            
+            <br />
+            <br />
+            <div id="submitSplit" class="buttons">
+                <button type="submit" class="btn btn-success" id="submitSplit">Create Split</button>
+                <button class="btn btn-danger" id="hideSplitCreator">Hide Split Creator</button>
+            </div>
+        </div>
+    </form>
+    
+    <form method="POST">
+        <div id="ActiveSplit" style="display:none">
+            <br />
+            <h3>Set Active Split</h3>
+            {% for split in user.splits if split.is_active == False%}
+                <div class="form-check">
+                    <!-- Add the same 'name' attribute to each input -->
+                    <input class="form-check-input" type="radio" name="selectedSplit" id="split{{ split.id }}" value="{{ split.id }}">
+                    <label class="form-check-label" for="split{{ split.id }}">
+                        {{ split.split_name }}
+                    </label>
+                </div>
+            {% endfor %}
+            <br />
+            <button type="submit" class="btn btn-primary">Set Active Split</button>
+        </div>
+    </form>
+    
+
+    <br />
+
+    <script>
+        var show_workouts_clicked = false; // This variable should be outside the function to keep its state
+        var show_splits_clicked = false; 
+        var show_split_activator_clicked = false;
+        var num_wkrout = 1
+        document.getElementById('showAllWorkouts').onclick = function(event) {
+            if (!show_workouts_clicked) {
+                document.getElementById('allWorkouts').style.display = "block";
+                document.getElementById('showAllWorkouts').textContent = "Hide All Workouts";
+                show_workouts_clicked = true;
+            }
+            else {
+                document.getElementById('allWorkouts').style.display = "none";
+                document.getElementById('showAllWorkouts').textContent = "Show All Workouts";
+                document.getElementById('showAllWorkouts').style.backgroundColor = "";
+                document.getElementById('showAllWorkouts').style.borderColor = "";
+                show_workouts_clicked = false;
+            }
+        };
+
+        document.getElementById('showAllSplits').onclick = function(event) {
+            if (!show_workouts_clicked) {
+                document.getElementById('allSplits').style.display = "block";
+                document.getElementById('showAllSplits').textContent = "Hide All Splits";
+                show_workouts_clicked = true;
+            }
+            else {
+                document.getElementById('allSplits').style.display = "none";
+                document.getElementById('showAllSplits').textContent = "Show All Splits";
+                document.getElementById('showAllSplits').style.backgroundColor = "";
+                document.getElementById('showAllSplits').style.borderColor = "";
+                show_workouts_clicked = false;
+            }
+        };
+
+        document.getElementById('setActiveSplit').onclick = function(event) {
+            if (!show_workouts_clicked) {
+                document.getElementById('ActiveSplit').style.display = "block";
+                document.getElementById('setActiveSplit').textContent = "Hide Split Selector";
+                show_workouts_clicked = true;
+            }
+            else {
+                document.getElementById('ActiveSplit').style.display = "none";
+                document.getElementById('setActiveSplit').textContent = "Set Active Split";
+                document.getElementById('setActiveSplit').style.backgroundColor = "";
+                document.getElementById('setActiveSplit').style.borderColor = "";
+                show_workouts_clicked = false;
+            }
+        };
+
+        document.getElementById('createNewSplit').onclick = function(event) {
+            document.getElementById('createNewSplit').style.display = "none";
+            document.getElementById('createSplit').style.display = "";
+        };
+
+        document.getElementById('addOption').onclick = function(event) {
+            event.preventDefault();
+            num_wkrout += 1;
+            var dynamicOptions = document.getElementById('splitFormContainer');
+            dynamicOptions.innerHTML += `
+
+                <div id="creatingSplitForm${num_wkrout}" class="form-row align-items-center">
+                    <div class="form-group col-md-4">
+                        <label for="inputWrkt${num_wkrout}">Select Workout ${num_wkrout}</label>
+                        <select id="inputWrkt${num_wkrout}" name ="workout${num_wkrout}" class="form-control" required>
+                            <option value="" selected disabled>Choose a Workout</option>
+                            {% for wkrt in user.workouts %}
+                                <option> {{ wkrt.workout_name }} </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>   
+            `;
+            
+        }
+
+        document.getElementById('remOption').onclick = function(event) {
+            event.preventDefault();
+            if (num_wkrout > 1) {
+                document.getElementById(('creatingSplitForm' + num_wkrout)).remove();
+                num_wkrout = num_wkrout- 1;
+            }
+        }
+
+        document.getElementById('hideSplitCreator').onclick = function(event) {
+            event.preventDefault();
+            document.getElementById('createSplit').style.display = "none";
+            document.getElementById('createNewSplit').style.display = "";
+        }
+
+        
+    </script>
+
+{% endblock %}
