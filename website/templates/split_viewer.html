@@ -6,7 +6,7 @@
     <br />
     {% for split in user.splits if split.is_active%}
         <h2>Active Split: {{split.split_name}}</h2>
-        {% for wkrt in split.workouts %}
+        {% for wkrt in split.get_workouts() %}
             <h3> 
                 {{ wkrt.workout_name }}
             </h3>

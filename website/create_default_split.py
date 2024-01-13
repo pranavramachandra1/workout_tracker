@@ -75,5 +75,6 @@ def create_default_split():
         workouts.append(workout)
         db.session.add(workout)
     default_split.workouts = workouts
+    default_split.order = [w.id for w in workouts]
     db.session.commit()
     print('Default Split Created!')

@@ -33,6 +33,9 @@ def editor():
                 for workout_id in workout_ids:
                     new_split.workouts.append(Workout.query.get(workout_id))
 
+                new_split.order = workout_ids
+                print(new_split.get_curr_workout())
+
                 db.session.commit()
                 flash('Split created!', category='success')
                 

@@ -25,7 +25,8 @@ def upload():
             return render_template("upload_workout.html", user=current_user)
 
         workout_data = pd.read_csv(request.files['userUploadedWorkoutData'])
-        current_workout = current_user.get_active_split().get_curent_workout(True)   
+        current_workout = current_user.get_active_split().get_curr_workout()
+        current_user.get_active_split().move_to_next_workout()
         # Testing if User Submitted Data is Correct:
         if not ([el.lower() for el in workout_data.columns.tolist()][1:] == ['movement', 'weight', 'reps', 'set']):
             flash('Wrong Format. Please double check your template formatting.', category='error')
@@ -52,7 +53,7 @@ def upload():
 @upload_workout.route('/download-template', methods=['GET', 'POST'])
 @login_required
 def download_template():
-    workout = current_user.get_active_split().workouts[0]
+    workout = current_user.get_active_split().get_curr_workout()
 
     template = pd.DataFrame(columns = ['Movement', 'Weight', 'Reps', 'Set'])
     count = 0

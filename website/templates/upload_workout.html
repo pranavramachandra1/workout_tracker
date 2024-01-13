@@ -9,7 +9,7 @@
     <h4> {{user.first_name}}, below is the next workout in your split:</h4>
 
     <br />
-    <h4> Workout: {{user.get_active_split().get_curent_workout(False).workout_name}}</h4>
+    <h4> Workout: {{user.get_active_split().get_curr_workout().workout_name}}</h4>
     <table class="table">
         <thead>
             <tr>
@@ -27,7 +27,7 @@
         </thead>
 
         <tbody>
-            {% for mov in user.get_active_split().get_curent_workout(False).movements %}
+            {% for mov in user.get_active_split().get_curr_workout().movements %}
                 <tr>
                     <th scope="row">{{mov.mov_name}}</th>
                     <td>{{mov.sets}}</td>
