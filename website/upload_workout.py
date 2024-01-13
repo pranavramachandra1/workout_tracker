@@ -45,7 +45,6 @@ def upload():
                 )
                 db.session.add(new_data)
                 db.session.commit()
-            print(current_user.get_active_split().get_workout_list())
             flash('Upload Successful! Nice Workout!', category='success')
             
     return render_template("upload_workout.html", user=current_user)
