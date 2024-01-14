@@ -1,21 +1,33 @@
 {% extends "base.html" %} {% block title %}Home{% endblock %} {% block content
     %}
-    <h1 align="center">Home</h1>
-    <ul class="list-group list-group-flush" id="notes">
-      {% for note in user.notes %}
-      <li class="list-group-item">
-        {{ note.data }}
-        <button type="button" class="close" onClick="deleteNote({{ note.id }})">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </li>
-      {% endfor %}
-    </ul>
-    <form method="POST">
-      <textarea name="note" id="note" class="form-control"></textarea>
+    <br />
+    <h1 align="center"> User Dashboard: </h1>
+
+    <h3> Welcome to your workout tracker!</h3>
+
+    <br />
+    <br />
+
+    <div id = 'calendar'>
+      <h2 align = "center"> {{calendar.dt.strftime("%B")}}</h2>
       <br />
-      <div align="center">
-        <button type="submit" class="btn btn-primary">Add Note</button>
-      </div>
-    </form>
+      {% for week in calendar.calendar %}
+
+        <div class = 'card-group'>
+          {% for day in week %}
+            <div class="card">
+              <div class="card-body">
+                {% if day %}
+                  <h5 class="card-title">{{day.dt.day}}</h5>
+                {% endif %}
+                <!-- <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p> -->
+                <!-- <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p> -->
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+
+      {% endfor %}
+    </div>
+    
     {% endblock %}
