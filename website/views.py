@@ -17,7 +17,9 @@ def home():
 
     workout_data = WorkoutData.query.filter_by(user_id = current_user.id).all()
 
-    
+    workout_dict = add_workouts_to_dates(workout_data, calendar)
+
+    print(workout_dict)
 
     if request.method == 'POST':
         note = request.form.get('note')
