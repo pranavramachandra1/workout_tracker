@@ -55,7 +55,7 @@ class Split(db.Model):
 
 class WorkoutData(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    workout_name = db.Column(db.String(100))
+    workout_id = db.Column(db.Integer)
     movement_name = db.Column(db.String(100))
     date = db.Column(db.DateTime(timezone = True), default = func.now)
     weight = db.Column(db.Integer)

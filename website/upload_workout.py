@@ -35,14 +35,18 @@ def upload():
         else:
             for i in range(len(workout_data)):
                 new_data = WorkoutData(
-                    workout_name = current_workout.id,
+                    workout_id = current_workout.id,
                     date = datetime.now(),
                     movement_name = workout_data.loc[i]['Movement'],
-                    weight = workout_data.loc[i]['Weight'],
-                    reps = workout_data.loc[i]['Reps'],
-                    set_number = workout_data.loc[i]['Set'],
+                    weight = workout_data.loc[i]['Weight'].item(),
+                    reps = workout_data.loc[i]['Reps'].item(),
+                    set_number = workout_data.loc[i]['Set'].item(),
                     user_id = current_user.id
                 )
+                
+                print(type(new_data.weight))
+                print(type(1))
+
                 db.session.add(new_data)
                 db.session.commit()
             flash('Upload Successful! Nice Workout!', category='success')

@@ -15,19 +15,130 @@
 
         <div class = 'card-group'>
           {% for day in week %}
-            <div class="card">
-              <div class="card-body">
-                {% if day %}
-                  <h5 class="card-title">{{day.dt.day}}</h5>
-                {% endif %}
-                <!-- <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p> -->
-                <!-- <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p> -->
+            {% if day %}
+              {% if day.dt.day in workout_dict %}
+                <div class="card text-white bg-success">
+                  <div class="card-body">
+                      <h5 class="card-title">{{day.dt.day}}</h5>
+                      {% for w in day.completed_workouts %}
+                        <p> Completed {{w}}! </p>
+                      {% endfor %}
+                  </div>
+                </div>
+              {% else %}
+                <div class="card">
+                  <div class="card-body">
+                      <h5 class="card-title">{{day.dt.day}}</h5>
+                  </div>
+                </div>
+              {% endif %}
+            {% else %}
+              <div class="card">
+                <div class="card-body">
+                </div>
               </div>
-            </div>
+            {% endif %}
           {% endfor %}
         </div>
 
       {% endfor %}
     </div>
+
+  <br />
+  <h3 align = "center"> Statistics Tracker: </h3>
+  <canvas id="sampleChart"></canvas>
+  <div id="output"></div>
+
+  <br />
+  
+  <form method="POST">
+    <div id="selectWorkout" class="form-row align-items-center">
+      <div class="form-group col-md-4">
+          <label for="changeWorkout"> Select a Workout to View: </label>
+          <select id="changeWorkout" class="form-control" name = "changeWorkout" required>
+              <option value="" selected disabled>Choose a Workout</option>
+              {% for wkrt in user.workouts %}
+                  <option> {{ wkrt.workout_name }} </option>
+              {% endfor %}
+          </select>
+      </div>
+    </div> 
+    <button class="btn btn-primary" type="submit" id="changeWorkout" name="changeWorkout">View</button>
+  </form>
+           
+
+  <br />
+  <br />
+
+  <!-- Your custom script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', (event) => {
+        let canvas = document.getElementById("sampleChart");
+        let ctx = canvas.getContext('2d');
+    
+        // Parse the volume data for each movement
+        let volumeData = JSON.parse('{{ volume_data | tojson | safe }}');
+        console.log(volumeData);
+
+        let datasets = Object.keys(volumeData).map(movement => {
+            if (!volumeData[movement]) {
+                console.error('Missing data for movement:', movement);
+                return;
+            }
+            return {
+                label: movement,
+                data: volumeData[movement].values.map((value, index) => ({
+                    x: volumeData[movement].labels[index], // x is the date
+                    y: value // y is the volume
+                })),
+                borderColor: getRandomColor(),
+                backgroundColor: getRandomColor(),
+                fill: false
+            };
+        }).filter(dataset => dataset != null);
+
+
+        console.log(datasets);
+        new Chart(ctx, {
+            type: "line",
+            data: {
+                datasets: datasets
+            },
+            options: {
+                scales: {
+                    x: {
+                        type: 'time',
+                        title: {
+                            display: true,
+                            text: 'Date'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Volume'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true
+                    }
+                }
+            }
+        });
+    });
+    
+    function getRandomColor() {
+        var letters = '0123456789ABCDEF';
+        var color = '#';
+        for (var i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+    }
+    </script>
+    
     
     {% endblock %}
