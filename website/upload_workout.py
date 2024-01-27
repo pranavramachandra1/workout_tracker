@@ -43,9 +43,6 @@ def upload():
                     set_number = workout_data.loc[i]['Set'].item(),
                     user_id = current_user.id
                 )
-                
-                print(type(new_data.weight))
-                print(type(1))
 
                 db.session.add(new_data)
                 db.session.commit()

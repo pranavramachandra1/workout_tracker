@@ -25,11 +25,6 @@ def home():
     filtered_data = filter_workouts(workout_data, current_view_workout)
     volume_by_date = calculate_volume(filtered_data)
 
-    for w in calendar.calendar:
-        for d in w:
-            if d:
-                print(d.completed_workouts)
-
     assert isinstance(volume_by_date, dict), "volume_by_date must be a dictionary"
         
     return render_template("home.html", user = current_user, calendar = calendar, workout_dict = workout_dict, volume_data=volume_by_date)
