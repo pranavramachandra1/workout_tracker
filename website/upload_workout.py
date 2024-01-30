@@ -11,6 +11,19 @@ from .create_default_split import *
 
 upload_workout = Blueprint('upload_workout', __name__)
 
+class StoredWorkout:
+
+    def __init__(self) -> None:
+        pass
+    
+    def setWorkout(self, w):
+        self.workout = w
+
+    def getStoredWorkout(self):
+        return self.workout
+
+swkrt = StoredWorkout()
+
 @upload_workout.route('/upload-workout', methods=['GET', 'POST'])
 @login_required
 def upload():
@@ -25,7 +38,8 @@ def upload():
             return render_template("upload_workout.html", user=current_user)
 
         workout_data = pd.read_csv(request.files['userUploadedWorkoutData'])
-        current_workout = current_user.get_active_split().get_curr_workout()
+        current_workout = swkrt.getStoredWorkout()
+        # current_workout = current_user.get_active_split().get_curr_workout()
         current_user.get_active_split().move_to_next_workout()
         # Testing if User Submitted Data is Correct:
         if not ([el.lower() for el in workout_data.columns.tolist()][1:] == ['movement', 'weight', 'reps', 'set']):
@@ -53,7 +67,10 @@ def upload():
 @upload_workout.route('/download-template', methods=['GET', 'POST'])
 @login_required
 def download_template():
-    workout = current_user.get_active_split().get_curr_workout()
+    
+    workout_name = request.form.get('workout_name')
+    workout = Workout.query.filter_by(workout_name = workout_name, user_id = current_user.id).first()
+    swkrt.workout = workout
 
     template = pd.DataFrame(columns = ['Movement', 'Weight', 'Reps', 'Set'])
     count = 0
@@ -68,4 +85,3 @@ def download_template():
     buffer.seek(0)
 
     return send_file(buffer, as_attachment=True, download_name='template.csv', mimetype='text/csv')
-        

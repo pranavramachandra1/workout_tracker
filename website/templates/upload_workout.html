@@ -38,11 +38,25 @@
     </table>
 
     <h3>Uploading Instructions:</h3>
-    <p>1. Click the button below to download the template to enter your workout data.</p>
-    <button class="btn btn-primary" id="downloadTemplate" onclick="location.href='{{ url_for('upload_workout.download_template') }}'"> Download Your Template Here</button>
+    <p>1. Select your workout and click the button below to download the template to enter your workout data.</p>
+
+    <div class="downloadWorkout">
+        <form method='POST' action="{{ url_for('upload_workout.download_template') }}">
+            <div class="form-group">
+                <label for="workout_name">Select Your Workout to Upload</label>
+                <select class="form-control" id="workout_name" name="workout_name">
+                    <option value="" selected disabled>Choose a Workout</option>
+                    {% for wkrt in user.workouts %}
+                        <option value="{{ wkrt.workout_name }}"> {{ wkrt.workout_name }} </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-success">Download Your Template Here</button>
+        </form>
+    </div>
+    
     <br />
-    <br />
-    <p>2. Your tempalte should be an excel file. ONLY fill in the table with the weight and number of repetitions for in each set for each movement.</p>
+    <p>2. Your template should be an excel file. ONLY fill in the table with the weight and number of repetitions for in each set for each movement.</p>
     <h5>How to Fill Out Your Template</h5>
     <img src="{{ url_for('static', filename='images/template_instructions.jpg') }}" class="rounded float-left" alt="Template Instructions">
 
