@@ -33,7 +33,8 @@ def home():
                            user = current_user,
                            calendar = calendar, 
                            workout_dict = workout_dict, 
-                           volume_data=volume_by_date)
+                           volume_data=volume_by_date, 
+                           current_view_workout = current_view_workout)
 
 def get_current_month_data(workout_data, calendar):
     return [wd for wd in workout_data if wd.date.month == calendar.dt.month]
