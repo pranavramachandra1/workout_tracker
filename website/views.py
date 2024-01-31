@@ -14,7 +14,7 @@ def home():
     calendar = Calendar(current_user.id, datetime.now())
     workout_data = WorkoutData.query.filter_by(user_id = current_user.id).all()
     workout_dict = add_workouts_to_dates(workout_data, calendar)
-    workout_data = WorkoutData.query.filter_by(user_id=current_user.id).all()
+    workout_data = WorkoutData.query.filter_by(user_id=current_user.id).order_by(WorkoutData.date.asc()).all()
 
     current_view_workout = current_user.get_active_split().get_curr_workout()
 
@@ -25,9 +25,15 @@ def home():
     filtered_data = filter_workouts(workout_data, current_view_workout)
     volume_by_date = calculate_volume(filtered_data)
 
+    print(volume_by_date)
+
     assert isinstance(volume_by_date, dict), "volume_by_date must be a dictionary"
         
-    return render_template("home.html", user = current_user, calendar = calendar, workout_dict = workout_dict, volume_data=volume_by_date)
+    return render_template("home.html", 
+                           user = current_user,
+                           calendar = calendar, 
+                           workout_dict = workout_dict, 
+                           volume_data=volume_by_date)
 
 def get_current_month_data(workout_data, calendar):
     return [wd for wd in workout_data if wd.date.month == calendar.dt.month]
@@ -58,11 +64,15 @@ def calculate_volume(workout_data):
     processed_data = {}
     for movement, data_list in grouped_data.items():
         volume_by_date = {}
+        count = 0
         for data in data_list:
-            date = data.date.strftime('%Y-%m-%d')
+            # date = data.date.strftime('%Y-%m-%d')
+            date = data.date.strftime('%Y-%m-%d %H:%M:%S')
             volume = data.weight * data.reps * data.set_number
             volume_by_date[date] = volume_by_date.get(date, 0) + volume
-
+            count += 1
+        
+        # print(volume_by_date)
         # Convert to Data class format
         labels = sorted(volume_by_date.keys())
         values = [volume_by_date[date] for date in labels]
@@ -72,7 +82,12 @@ def calculate_volume(workout_data):
 
 def filter_workouts(workout_data, workout):
     filtered_data = []
+    mov_ids = []
+    movement_names = [mov.mov_name for mov in workout.movements]
     for w in workout_data:
-        if Workout.query.filter_by(id = w.workout_id).first().id == workout.id:
+        if Workout.query.filter_by(id = w.workout_id).first().id == workout.id or w.movement_name in movement_names:
             filtered_data.append(w)
+            if w.movement_name == 'Barbell Bench Press' and w.date.strftime('%Y-%m-%d %H:%M:%S') not in mov_ids:
+                mov_ids.append(w.date.strftime('%Y-%m-%d %H:%M:%S'))
+    # print(mov_ids)
     return filtered_data

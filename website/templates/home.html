@@ -46,7 +46,26 @@
 
   <br />
   <h3 align = "center"> Statistics Tracker: </h3>
-  <canvas id="sampleChart"></canvas>
+  <div class="row">
+    <div class="col-xs-10 col-sm-6 col-md-6">
+      <div class="card card-style mb-2">
+          <div class="card-body">
+              <div class="chart-container" style="position: relative;">
+                  <canvas id="sampleChart"></canvas>
+              </div>
+          </div>
+      </div>
+  </div>
+  <div class="col-xs-10 col-sm-6 col-md-6">
+    <div class="card card-style mb-2">
+        <div class="card-body">
+            <h3>Stats: Volume Tracker</h3>
+            <p>X Axis: Workout Number</p>
+            <p>Y Axis: Volume (Volume = weight * reps * sets)</p>
+        </div>
+    </div>
+</div>
+  </div>
   <div id="output"></div>
 
   <br />
@@ -80,6 +99,10 @@
         let volumeData = JSON.parse('{{ volume_data | tojson | safe }}');
         console.log(volumeData);
 
+        let maxLength = Math.max(...Object.values(volumeData).map(item => item.values.length));
+        // let count = Object.keys(volumeData).length; // Assuming you want to count the number of movements
+        const labels = Array.from({ length: maxLength }, (_, i) => i + 1); // Enumerate labels from 1 to count
+
         let datasets = Object.keys(volumeData).map(movement => {
             if (!volumeData[movement]) {
                 console.error('Missing data for movement:', movement);
@@ -102,7 +125,8 @@
         new Chart(ctx, {
             type: "line",
             data: {
-                datasets: datasets
+                datasets: datasets,
+                labels: labels
             },
             options: {
                 scales: {
@@ -138,6 +162,18 @@
         }
         return color;
     }
+
+    // Function to generate an array of date strings
+    function getLastNDates(n) {
+        let dates = [];
+        for (let i = 0; i < n; i++) {
+            let d = new Date();
+            d.setDate(d.getDate() - i);
+            dates.push(d.toISOString().split('T')[0]); // Format the date as YYYY-MM-DD
+        }
+        return dates.reverse(); // Reverse to get the dates in ascending order
+    }
+
     </script>
     
     
