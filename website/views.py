@@ -42,7 +42,7 @@ def home():
     filtered_data = filter_workouts(workout_data, current_view_workout)
     volume_by_date = calculate_volume(filtered_data)
 
-    # print(volume_by_date)
+    print(get_all_day().day_time > datetime.now())
 
     assert isinstance(volume_by_date, dict), "volume_by_date must be a dictionary"
 

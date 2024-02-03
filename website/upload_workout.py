@@ -39,14 +39,30 @@ def upload():
             return render_template("upload_workout.html", user=current_user)
 
         workout_data = pd.read_csv(request.files['userUploadedWorkoutData'])
+
+        try: 
+            swkrt.getStoredWorkout()
+        except:
+            flash('Please select a workout and downlaod your template.', category='error')
+            return render_template("upload_workout.html", user=current_user)
+
+
+        
         current_workout = swkrt.getStoredWorkout()
-        # current_workout = current_user.get_active_split().get_curr_workout()
-        current_user.get_active_split().move_to_next_workout()
+
+        print(current_workout.id)
+        
+        # If user is following the active split protocol:
+        if current_workout.id == current_user.get_active_split().get_curr_workout().id:
+            current_user.get_active_split().move_to_next_workout()
+        
         # Testing if User Submitted Data is Correct:
         if not ([el.lower() for el in workout_data.columns.tolist()][1:] == ['movement', 'weight', 'reps', 'set']):
             flash('Wrong Format. Please double check your template formatting.', category='error')
         elif not ([mov.mov_name for mov in current_workout.movements] == workout_data['Movement'].unique().tolist()):
             flash('Wrong Format. Please double check your template formatting.', category='error')
+        elif get_all_day().day_time > datetime.now():
+            flash('Cannot store workout data in the future! Please seelect a different day.', category='error')
         else:
             for i in range(len(workout_data)):
                 new_data = WorkoutData(

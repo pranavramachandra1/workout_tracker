@@ -17,31 +17,39 @@
                   {% if day %}
                       <div class="col"> <!-- Bootstrap column for each day -->
                           {% if day.dt.day in workout_dict %}
-                              <div class="card text-white bg-success" style="min-height: 100px;">
+                            {% if day.dt.day == current_day.day and day.dt.month == current_day.month and day.dt.year == current_day.year %}
+                              <div class="card text-white bg-primary" style="min-height: 100px;">
                                   <div class="card-body">
-                                    {% if day.dt.day == current_day.day and day.dt.month == current_day.month and day.dt.year == current_day.year %}
                                         <h5 class="card-title">TODAY: {{day.dt.day}}</h5>
                                         {% for w in day.completed_workouts %}
                                             <p> Completed {{w}}! </p>
                                         {% endfor %}
-                                      {% else %}
-                                        <h5 class="card-title">{{day.dt.day}}</h5>
-                                          {% for w in day.completed_workouts %}
-                                              <p> Completed {{w}}! </p>
-                                          {% endfor %}
-                                      {%endif%}
                                   </div>
                               </div>
+                            {% else %}
+                              <div class="card text-white bg-success" style="min-height: 100px;">
+                                  <div class="card-body">
+                                        <h5 class="card-title">{{day.dt.day}}</h5>
+                                        {% for w in day.completed_workouts %}
+                                            <p> Completed {{w}}! </p>
+                                        {% endfor %}
+                                  </div>
+                              </div>
+                            {% endif %}
                           {% else %}
+                            {% if day.dt.day == current_day.day and day.dt.month == current_day.month and day.dt.year == current_day.year %}
+                              <div class="card text-white bg-primary" style="min-height: 100px;">
+                                  <div class="card-body">
+                                      <h5 class="card-title">TODAY: {{day.dt.day}}</h5>
+                                  </div>
+                              </div>
+                            {% else %}
                               <div class="card" style="min-height: 100px;">
                                   <div class="card-body">
-                                    {% if day.dt.day == current_day.day and day.dt.month == current_day.month and day.dt.year == current_day.year %}
-                                      <h5 class="card-title">TODAY: {{day.dt.day}}</h5>
-                                    {% else %}
                                       <h5 class="card-title">{{day.dt.day}}</h5>
-                                    {%endif%}
                                   </div>
                               </div>
+                            {% endif %}
                           {% endif %}
                       </div>
                   {% else %}
