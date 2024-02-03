@@ -8,41 +8,72 @@
     <br />
     <br />
 
-    <div id = 'calendar'>
-      <h2 align = "center"> {{calendar.dt.strftime("%B")}}</h2>
+    <div id='calendar'>
+      <h2 align="center">{{calendar.dt.strftime("%B")}}</h2>
       <br />
       {% for week in calendar.calendar %}
-
-        <div class = 'card-group'>
-          {% for day in week %}
-            {% if day %}
-              {% if day.dt.day in workout_dict %}
-                <div class="card text-white bg-success">
-                  <div class="card-body">
-                      <h5 class="card-title">{{day.dt.day}}</h5>
-                      {% for w in day.completed_workouts %}
-                        <p> Completed {{w}}! </p>
-                      {% endfor %}
-                  </div>
-                </div>
-              {% else %}
-                <div class="card">
-                  <div class="card-body">
-                      <h5 class="card-title">{{day.dt.day}}</h5>
-                  </div>
-                </div>
-              {% endif %}
-            {% else %}
-              <div class="card">
-                <div class="card-body">
-                </div>
-              </div>
-            {% endif %}
-          {% endfor %}
-        </div>
-
+          <div class="row"> <!-- Bootstrap row for each week -->
+              {% for day in week %}
+                  {% if day %}
+                      <div class="col"> <!-- Bootstrap column for each day -->
+                          {% if day.dt.day in workout_dict %}
+                              <div class="card text-white bg-success" style="min-height: 100px;">
+                                  <div class="card-body">
+                                    {% if day.dt.day == current_day.day and day.dt.month == current_day.month and day.dt.year == current_day.year %}
+                                        <h5 class="card-title">TODAY: {{day.dt.day}}</h5>
+                                        {% for w in day.completed_workouts %}
+                                            <p> Completed {{w}}! </p>
+                                        {% endfor %}
+                                      {% else %}
+                                        <h5 class="card-title">{{day.dt.day}}</h5>
+                                          {% for w in day.completed_workouts %}
+                                              <p> Completed {{w}}! </p>
+                                          {% endfor %}
+                                      {%endif%}
+                                  </div>
+                              </div>
+                          {% else %}
+                              <div class="card" style="min-height: 100px;">
+                                  <div class="card-body">
+                                    {% if day.dt.day == current_day.day and day.dt.month == current_day.month and day.dt.year == current_day.year %}
+                                      <h5 class="card-title">TODAY: {{day.dt.day}}</h5>
+                                    {% else %}
+                                      <h5 class="card-title">{{day.dt.day}}</h5>
+                                    {%endif%}
+                                  </div>
+                              </div>
+                          {% endif %}
+                      </div>
+                  {% else %}
+                      <div class="col">
+                          <div class="card"  style="min-height: 100px;">
+                              <div class="card-body">
+                                  <!-- Empty cell for days without date -->
+                              </div>
+                          </div>
+                      </div>
+                  {% endif %}
+              {% endfor %}
+          </div>
       {% endfor %}
+  </div>
+  
+
+    <div class="row" align="center">
+      <form action="/decrease-month" method="post">
+        <button type="submit" class="btn btn-primary"><< Month</button>
+      </form>
+      <form action="/decrease-day" method="post">
+        <button type="submit" class="btn btn-primary">< Day</button>
+      </form>
+      <form action="/increase-day" method="post">
+        <button type="submit" class="btn btn-primary">> Day</button>
+      </form>
+      <form action="/increase-month" method="post">
+        <button type="submit" class="btn btn-primary">>> Month</button>
+      </form>
     </div>
+    
 
   <br />
   <h3 align = "center"> Statistics Tracker: </h3>

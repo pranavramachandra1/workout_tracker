@@ -50,6 +50,9 @@ class Calendar:
         self.dt = dt
         self.user_id = user_id
         self.calendar = generate_calendar(dt = dt)
+    
+    def __repr__(self):
+        return f'{self.calendar}'
 
 class Day:
     def __init__(self, completed_workouts, dt) -> None:

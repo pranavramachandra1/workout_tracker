@@ -8,6 +8,7 @@ import pandas as pd
 from io import BytesIO
 import numpy as np
 from .create_default_split import *
+from .views import *
 
 upload_workout = Blueprint('upload_workout', __name__)
 
@@ -50,7 +51,7 @@ def upload():
             for i in range(len(workout_data)):
                 new_data = WorkoutData(
                     workout_id = current_workout.id,
-                    date = datetime.now(),
+                    date = get_all_day().day_time,
                     movement_name = workout_data.loc[i]['Movement'],
                     weight = workout_data.loc[i]['Weight'].item(),
                     reps = workout_data.loc[i]['Reps'].item(),

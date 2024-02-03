@@ -21,6 +21,43 @@
         crossorigin="anonymous"
         />
 
+        <style>
+            .row {
+                display: flex;
+                margin-right: 0;
+                margin-left: 0;
+            }
+            
+            .col {
+                padding: 0;
+                display: flex;
+            }
+            
+            .card {
+                border: 1px solid #ddd; /* Add default border color */
+                flex-grow: 1; /* Grow to fill the column */
+            }
+            
+            .card:not(:last-child) {
+                border-right: none; /* Remove the right border */
+            }
+            
+            .row:not(:last-child) .card {
+                border-bottom: none; /* Remove the bottom border */
+            }
+            
+            .card-body {
+                padding: .75rem; /* Adjust card padding */
+                display: flex;
+                flex-direction: column;
+            }
+            
+            .card-title.mb-auto {
+                margin-bottom: auto; /* Push everything else to the bottom */
+            }
+        </style>
+          
+        
         <title>{% block title %}Home{% endblock %}</title>
     </head>
     <body>
