@@ -45,8 +45,6 @@ def upload():
         except:
             flash('Please select a workout and downlaod your template.', category='error')
             return render_template("upload_workout.html", user=current_user)
-
-
         
         current_workout = swkrt.getStoredWorkout()
 
