@@ -1,16 +1,42 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from os import path
+import os
 from flask_login import LoginManager
+
+import pymysql.cursors
+
+# # Connect to the database
+# connection = pymysql.connect(host='db-mysql-nyc3-82652-do-user-16279925-0.c.db.ondigitalocean.com',
+#                              user='doadmin',
+#                              password='AVNS_fAJia2yPk9QfAd_pKp3',
+#                              database='defaultdb',
+#                              cursorclass=pymysql.cursors.DictCursor)
+
+# try:
+#     with connection.cursor() as cursor:
+#         # Create a new record
+#         sql = "INSERT INTO `users` (`email`, `password`) VALUES (%s, %s)"
+#         cursor.execute(sql, ('webmaster@example.com', 'very-secret'))
+
+#     # connection is not autocommit by default. So you must commit to save your changes.
+#     connection.commit()
+
+#     with connection.cursor() as cursor:
+#         # Read a single record
+#         sql = "SELECT `id`, `password` FROM `users` WHERE `email`=%s"
+#         cursor.execute(sql, ('webmaster@example.com',))
+#         result = cursor.fetchone()
+#         print(result)
+# finally:
+#     connection.close()
 
 db = SQLAlchemy()
 DB_NAME = "database.db"
 
-
-
 def create_app():
     app = Flask(__name__)
-    app.config['SECRET_KEY'] = 'qwerty'
+    app.config['SECRET_KEY'] = 'qwertyuiop'
     app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_NAME}'
     db.init_app(app)
 

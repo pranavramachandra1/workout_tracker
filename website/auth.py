@@ -5,6 +5,8 @@ from . import db
 from flask_login import login_user, login_required, logout_user, current_user
 from .create_default_split import *
 
+ACCESS_TOKEN = "ilovelegday1234567890"
+
 auth = Blueprint('auth', __name__)
 
 @auth.route('/login', methods = ['GET', 'POST'])
@@ -12,7 +14,6 @@ def login():
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
-
         user = User.query.filter_by(email = email).first()
 
         if user:
@@ -40,10 +41,13 @@ def sign_up():
         first_name = request.form.get('firstName')
         password1 = request.form.get('password1')
         password2 = request.form.get('password2')
+        access_token = request.form.get('accessToken')
 
         user = User.query.filter_by(email = email).first()
         if user:
             flash('Email already exists.', category = 'error')
+        elif access_token != ACCESS_TOKEN:
+            flash('Access token is incorrect.', category = 'error')
         elif len(email) < 4:
             flash('Email must be greater than 3 characters.', category='error')
         elif len(first_name) < 2:
