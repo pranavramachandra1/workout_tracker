@@ -37,40 +37,91 @@
         </tbody>
     </table>
 
-    <h3>Uploading Instructions:</h3>
-    <p>1. Select your workout and click the button below to download the template to enter your workout data.</p>
-
     <div class="downloadWorkout">
         <form method='POST' action="{{ url_for('upload_workout.download_template') }}">
             <div class="form-group">
                 <label for="workout_name">Select Your Workout to Upload</label>
                 <select class="form-control" id="workout_name" name="workout_name">
                     <option value="" selected disabled>Choose a Workout</option>
-                    {% for wkrt in user.workouts %}
-                        <option value="{{ wkrt.workout_name }}"> {{ wkrt.workout_name }} </option>
+                    {% for wokrt in user.workouts %}
+                        <option value="{{ wokrt.workout_name }}"> {{ wokrt.workout_name }} </option>
                     {% endfor %}
                 </select>
             </div>
-            <button type="submit" class="btn btn-success">Download Your Template Here</button>
+            <button type="submit" class="btn btn-success">Generate Template</button>
+        </form>
+    </div>
+
+    <style>
+        .form-row {
+            margin-bottom: 10px; /* Adds a gap between rows */
+        }
+    </style>
+
+    <br/>
+
+    <div class="enterWorkoutData">
+        <h3>Enter workout data:</h3>
+        <form method="POST" action="{{ url_for('upload_workout.upload') }}">
+            {% if wrkt %}
+                <h5> {{ wrkt.workout_name }} </h5>
+                {% for m in wrkt.movements %}
+                    <h6> {{ m.mov_name }} </h6>
+                    {% set outer_loop = loop %}
+                    <div id="sets-container-{{ loop.index }}">
+                        {% for s in range(m.sets) %}
+                            <div class="form-row" id="set-{{ loop.index }}-{{ loop.index0 + 1 }}">
+                                <div class="col">
+                                    <input type="number" class="form-control" name="weight-{{ outer_loop.index0 }}-{{ loop.index0 }}" placeholder="Weight" min="1">
+                                </div>
+                                <div class="col">
+                                    <input type="number" class="form-control" name="reps-{{ outer_loop.index0 }}-{{ loop.index0 }}" placeholder="Reps" min="1">
+                                </div>
+                                
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <button type="button" onclick="addSet({{ loop.index }})" class="btn btn-primary">Add Set</button>
+                    <button type="button" onclick="removeSet({{ loop.index }})" class="btn btn-primary">Remove Set</button>
+                {% endfor %}
+            {% else %}
+                <h5> No active workout available. Please set up a workout first. </h5>
+            {% endif %}
+            <br/>
+            <br/>
+            <button type="submit" id="upload-workout" class="btn btn-success">Upload Workout</button>
         </form>
     </div>
     
-    <br />
-    <p>2. Your template should be an excel file. ONLY fill in the table with the weight and number of repetitions for in each set for each movement.</p>
-    <h5>How to Fill Out Your Template</h5>
-    <img src="{{ url_for('static', filename='images/template_instructions.jpg') }}" class="rounded float-left" alt="Template Instructions">
 
-    <p>3. Upload your template:</p>
-    <form method="POST" enctype="multipart/form-data">
-        <div class="form-group">
-          <label for="submitWorkoutData">Submit your completed data HERE:</label>
-          <input type="file" class="form-control-file" id="userUploadedWorkoutData" name="userUploadedWorkoutData" required>
-        </div>
+    <br/>
+    <br/>
 
-        <button class = "btn btn-primary" id="submitWorkoutData" type="submit">Upload Workout</button>
-    </form>
-    <br />
-    <br />
+    <script>
+        function addSet(movementIndex) {
+            const container = document.getElementById(`sets-container-${movementIndex}`);
+            const setIndex = container.children.length + 1;
+            const newRow = document.createElement('div');
+            newRow.className = 'form-row';
+            newRow.id = `set-${movementIndex}-${setIndex}`;
+            newRow.innerHTML = `
+                <div class="col">
+                    <input type="number" class="form-control" name="weight-${movementIndex}-${setIndex}" placeholder="Weight" min="1">
+                </div>
+                <div class="col">
+                    <input type="number" class="form-control" name="reps-${movementIndex}-${setIndex}" placeholder="Reps" min="1">
+                </div>`;
+
+            container.appendChild(newRow);
+        }
+        
+        function removeSet(movementIndex) {
+            const container = document.getElementById(`sets-container-${movementIndex}`);
+            if (container.children.length > 1) { // Ensure at least one set remains
+                container.removeChild(container.lastChild);
+            }
+        }
+        </script>
 
     
 

@@ -28,56 +28,65 @@ swkrt = StoredWorkout()
 @upload_workout.route('/upload-workout', methods=['GET', 'POST'])
 @login_required
 def upload():
+    swkrt.setWorkout(current_user.get_active_split().get_curr_workout())
+
     if request.method == 'POST':
-        if 'userUploadedWorkoutData' not in request.files:
-            flash('No file uploaded.', category='error')
-            return render_template("upload_workout.html", user=current_user)
-
-        # Testing file type:
-        if request.files['userUploadedWorkoutData'].filename[-4:] != '.csv':
-            flash('Wrong file type. Please resubmit file.', category='error')
-            return render_template("upload_workout.html", user=current_user)
-
-        workout_data = pd.read_csv(request.files['userUploadedWorkoutData'])
-
-        try: 
-            swkrt.getStoredWorkout()
+        try:
+            current_workout = swkrt.getStoredWorkout()
         except:
-            flash('Please select a workout and downlaod your template.', category='error')
+            flash('No workout is currently active.', category='error')
             return render_template("upload_workout.html", user=current_user)
-        
-        current_workout = swkrt.getStoredWorkout()
 
-        print(current_workout.id)
-        
-        # If user is following the active split protocol:
-        if current_workout.id == current_user.get_active_split().get_curr_workout().id:
-            current_user.get_active_split().move_to_next_workout()
-        
-        # Testing if User Submitted Data is Correct:
-        if not ([el.lower() for el in workout_data.columns.tolist()][1:] == ['movement', 'weight', 'reps', 'set']):
-            flash('Wrong Format. Please double check your template formatting.', category='error')
-        elif not ([mov.mov_name for mov in current_workout.movements] == workout_data['Movement'].unique().tolist()):
-            flash('Wrong Format. Please double check your template formatting.', category='error')
-        elif get_all_day().day_time > datetime.now():
-            flash('Cannot store workout data in the future! Please seelect a different day.', category='error')
+            # Collect form data
+        workout_data = []
+        for m_index, movement in enumerate(current_workout.movements):
+            for s_index in range(movement.sets):
+                weight_key = f"weight-{m_index}-{s_index}"
+                reps_key = f"reps-{m_index}-{s_index}"
+                weight = request.form.get(weight_key)
+                reps = request.form.get(reps_key)
+
+                if weight and reps:  # Check if the fields are not empty
+                    workout_data.append({
+                        'movement': movement.mov_name,
+                        'weight': weight,
+                        'reps': reps,
+                        'set': s_index + 1
+                    })
+
+        # Perform data validation and saving
+        if any(not data['weight'].isdigit() or not data['reps'].isdigit() for data in workout_data):
+            flash('Weight and reps must be numeric values.', category='error')
+        elif not workout_data:
+            flash('Please enter valid workout data.', category='error')
+        elif datetime.now() < get_all_day().day_time:
+            flash('Cannot store workout data in the future! Please select a different day.', category='error')
         else:
-            for i in range(len(workout_data)):
-                new_data = WorkoutData(
-                    workout_id = current_workout.id,
-                    date = get_all_day().day_time,
-                    movement_name = workout_data.loc[i]['Movement'],
-                    weight = workout_data.loc[i]['Weight'].item(),
-                    reps = workout_data.loc[i]['Reps'].item(),
-                    set_number = workout_data.loc[i]['Set'].item(),
-                    user_id = current_user.id
-                )
 
+        # Upload workout data:
+            for data in workout_data:
+                new_data = WorkoutData(
+                    workout_id=current_workout.id,
+                    date=get_all_day().day_time,
+                    movement_name=data['movement'],
+                    weight=int(data['weight']),
+                    reps=int(data['reps']),
+                    set_number=data['set'],
+                    user_id=current_user.id
+                )
                 db.session.add(new_data)
-                db.session.commit()
+            db.session.commit()
             flash('Upload Successful! Nice Workout!', category='success')
-            
-    return render_template("upload_workout.html", user=current_user)
+
+            # Update workout in split if uploaded workout matches the next workout in the split:
+
+            # print(swkrt.getStoredWorkout())
+            # print(current_user.get_active_split().get_curr_workout())
+            if (swkrt.getStoredWorkout() == current_user.get_active_split().get_curr_workout()):
+                current_user.get_active_split().move_to_next_workout()
+
+
+    return render_template("upload_workout.html", user=current_user, wrkt=swkrt.getStoredWorkout())
 
 @upload_workout.route('/download-template', methods=['GET', 'POST'])
 @login_required
@@ -87,16 +96,16 @@ def download_template():
     workout = Workout.query.filter_by(workout_name = workout_name, user_id = current_user.id).first()
     swkrt.workout = workout
 
-    template = pd.DataFrame(columns = ['Movement', 'Weight', 'Reps', 'Set'])
-    count = 0
-    for movement in workout.movements:
-        for i in range(1, movement.sets + 1):
-            template.loc[count] = [movement.mov_name, 0, 0, i]
-            count += 1
-    template_export = template.to_csv()
+    # template = pd.DataFrame(columns = ['Movement', 'Weight', 'Reps', 'Set'])
+    # count = 0
+    # for movement in workout.movements:
+    #     for i in range(1, movement.sets + 1):
+    #         template.loc[count] = [movement.mov_name, 0, 0, i]
+    #         count += 1
+    # template_export = template.to_csv()
 
-    buffer = BytesIO()
-    buffer.write(template_export.encode())
-    buffer.seek(0)
+    # buffer = BytesIO()
+    # buffer.write(template_export.encode())
+    # buffer.seek(0)
 
-    return send_file(buffer, as_attachment=True, download_name='template.csv', mimetype='text/csv')
+    return render_template("upload_workout.html", user=current_user, wrkt= swkrt.getStoredWorkout())
