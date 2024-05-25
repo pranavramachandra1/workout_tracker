@@ -37,7 +37,7 @@ def upload():
             flash('No workout is currently active.', category='error')
             return render_template("upload_workout.html", user=current_user)
 
-            # Collect form data
+        # Collect form data
         workout_data = []
         for m_index, movement in enumerate(current_workout.movements):
             for s_index in range(movement.sets):
@@ -53,6 +53,8 @@ def upload():
                         'reps': reps,
                         'set': s_index + 1
                     })
+        
+        user_workout_notes = request.form.get("workoutNotes")
 
         # Perform data validation and saving
         if any(not data['weight'].isdigit() or not data['reps'].isdigit() for data in workout_data):
@@ -75,6 +77,13 @@ def upload():
                     user_id=current_user.id
                 )
                 db.session.add(new_data)
+            new_note = Note(
+                workout_id = current_workout.id,
+                date = get_all_day().day_time,
+                data = user_workout_notes,
+                user_id = current_user.id
+            )
+            db.session.add(new_note)
             db.session.commit()
             flash('Upload Successful! Nice Workout!', category='success')
 

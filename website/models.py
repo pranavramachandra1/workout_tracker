@@ -10,6 +10,7 @@ split_workout = db.Table('split_workout',
 
 class Note(db.Model):
     id = db.Column(db.Integer, primary_key = True)
+    workout_id = db.Column(db.Integer)
     data = db.Column(db.String(10000))
     date = db.Column(db.DateTime(timezone = True), default = func.now)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
