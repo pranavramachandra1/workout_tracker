@@ -79,9 +79,6 @@ def upload():
             flash('Upload Successful! Nice Workout!', category='success')
 
             # Update workout in split if uploaded workout matches the next workout in the split:
-
-            # print(swkrt.getStoredWorkout())
-            # print(current_user.get_active_split().get_curr_workout())
             if (swkrt.getStoredWorkout() == current_user.get_active_split().get_curr_workout()):
                 current_user.get_active_split().move_to_next_workout()
 
