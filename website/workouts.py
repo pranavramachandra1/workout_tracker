@@ -35,7 +35,7 @@ def splits():
             else:
                 movements = []
                 for i in range(num_movements):
-                    new_mov = Movement(mov_name = mov_names[i], reps = num_reps[i], sets = num_sets[i], workout_id = new_workout.id)
+                    new_mov = Movement(mov_name = mov_names[i], reps = num_reps[i], sets = num_sets[i], workout_id = new_workout.id, user_id = current_user.id)
                     movements.append(new_mov)
                     db.session.add(new_mov)
                 new_workout.movements = movements

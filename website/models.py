@@ -2,6 +2,8 @@ from . import db
 from flask_login import UserMixin
 from sqlalchemy.sql import func
 from sqlalchemy import JSON
+from sqlalchemy import extract, desc, asc
+from flask_login import login_required, current_user
 
 split_workout = db.Table('split_workout',
     db.Column('split_id', db.Integer, db.ForeignKey('split.id'), primary_key=True),
@@ -28,6 +30,7 @@ class Workout(db.Model):
 
 class Movement(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer)
     mov_name = db.Column(db.String(100))
     reps = db.Column(db.Integer)
     sets = db.Column(db.Integer)
@@ -63,6 +66,7 @@ class WorkoutData(db.Model):
     reps = db.Column(db.Integer)
     set_number = db.Column(db.Integer)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    session_id = db.Column(db.Integer)
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key = True)
@@ -78,3 +82,35 @@ class User(db.Model, UserMixin):
             if split.is_active:
                 return split
         return None
+    
+    def process_workout_data(self, data):
+        workout_data = {}
+        for d in data:
+            if d.movement_name in workout_data:
+                workout_data[d.movement_name].append(d)
+            else:
+                workout_data[d.movement_name] = [d]
+        return workout_data
+    
+    def get_last_workout_data(self, user_id):
+        last_workout_data = WorkoutData.query.filter_by(user_id = user_id).order_by(desc(WorkoutData.date), desc(WorkoutData.movement_name)).first()
+        if not last_workout_data:
+            return
+        last_date = last_workout_data.date
+        query = WorkoutData.query.filter_by(user_id = user_id, date = last_date).all()
+        return self.process_workout_data(query)
+    
+    def get_last_workout(self):
+        if not WorkoutData.query.filter_by(user_id = self.id).order_by(desc(WorkoutData.date)).first():
+            return {}
+        last_workout_id = WorkoutData.query.filter_by(user_id = self.id).order_by(desc(WorkoutData.date)).first().workout_id
+        last_workout = Workout.query.filter_by(user_id = self.id, id = last_workout_id).first()
+        return last_workout
+    
+    def get_workout_from_id_date(self, date):
+        query = WorkoutData.query.filter_by(user_id = self.id, date = date).order_by(desc(WorkoutData.movement_name)).all()
+        return self.process_workout_data(query)
+    
+    def get_all_movements(self):
+        movs = Movement.query.filter_by(user_id = self.id).order_by(asc(Movement.mov_name)).all()
+        return [m.mov_name for m in movs]

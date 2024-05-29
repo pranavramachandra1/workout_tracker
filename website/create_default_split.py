@@ -67,7 +67,8 @@ def create_default_split():
                         mov_name = m['mov_name'],
                         reps = m['reps'],
                         sets = m['sets'],
-                        workout_id = workout.id
+                        workout_id = workout.id,
+                        user_id = current_user.id
                     )
             db.session.add(movement)
             movements.append(movement)

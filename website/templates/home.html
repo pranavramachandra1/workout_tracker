@@ -18,20 +18,30 @@
                       <div class="col"> <!-- Bootstrap column for each day -->
                           {% if day.dt.day in workout_dict %}
                             {% if day.dt.day == current_day.day and day.dt.month == current_day.month and day.dt.year == current_day.year %}
-                              <div class="card text-white bg-primary" style="min-height: 100px;">
-                                  <div class="card-body">
-                                        <h5 class="card-title">TODAY: {{day.dt.day}}</h5>
+                                <div class="card text-white bg-primary" style="min-height: 100px;">
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{day.dt.day}}</h5>
                                         {% for w in day.completed_workouts %}
-                                            <p> Completed {{w}}! </p>
+                                        <form method="post" action="/update-workout">
+                                            <input type="hidden" name="date" value="{{day.dt}}">
+                                            <input type="hidden" name="workout" value="{{w}}">
+                                            <input type="hidden" name="index" value="{{loop.index0}}">
+                                            <button type="submit" class="btn btn-link" style="color: white;">Completed {{w}}!</button>
+                                        </form>
                                         {% endfor %}
-                                  </div>
-                              </div>
+                                    </div>
+                                </div>
                             {% else %}
                               <div class="card text-white bg-success" style="min-height: 100px;">
                                   <div class="card-body">
                                         <h5 class="card-title">{{day.dt.day}}</h5>
                                         {% for w in day.completed_workouts %}
-                                            <p> Completed {{w}}! </p>
+                                        <form method="post" action="/update-workout">
+                                            <input type="hidden" name="date" value="{{day.dt}}">
+                                            <input type="hidden" name="workout" value="{{w}}">
+                                            <input type="hidden" name="index" value="{{loop.index0}}">
+                                            <button type="submit" class="btn btn-link" style="color: white;">Completed {{w}}!</button>
+                                        </form>
                                         {% endfor %}
                                   </div>
                               </div>
@@ -124,12 +134,103 @@
     </div> 
     <button class="btn btn-primary" type="submit" id="changeWorkout" name="changeWorkout">View</button>
   </form>
-           
+
+  <br />
+
+  <br />
+  <h3 align = "center"> Movement Tracker: </h3>
+  <div class="row">
+    <div class="col-xs-10 col-sm-6 col-md-6">
+      <div class="card card-style mb-2">
+          <div class="card-body">
+              <div class="chart-container" style="position: relative;">
+                  <canvas id="sampleChart2"></canvas>
+              </div>
+          </div>
+      </div>
+  </div>
+  <div class="col-xs-10 col-sm-6 col-md-6">
+    <div class="card card-style mb-2">
+        <div class="card-body">
+            <h3>Stats: Volume Tracker</h3>
+            <h5>Workout: {{current_view_workout.workout_name}}</h5>
+            <p>X Axis: Workout Number</p>
+            <p>Y Axis: Volume (Volume = weight * reps * sets)</p>
+        </div>
+    </div>
+</div>
+  </div>
+  <div id="output"></div>
+
+  <br />
+
+
+  <form method="POST">
+    <div id="selectWorkout" class="form-row align-items-center">
+      <div class="form-group col-md-4">
+          <label for="changeMovement"> Select a Movement to View: </label>
+          <select id="changeMovement" class="form-control" name = "changeMovement" required>
+              <option value="" selected disabled>Choose a Workout</option>
+              {% for m in movement_names %}
+                  <option> {{ m }} </option>
+              {% endfor %}
+          </select>
+      </div>
+    </div> 
+    <button class="btn btn-primary" type="submit" id="changeMovement" name="changeMovement">View</button>
+  </form>
+
+  <br />
+  <br/>
+
+  <br/>
+  <br/>
+
+  <h3> Workout data for {{current_day}}, {{workout_display_name}}: </h3>
+  <br/>
+
+  <div id="workouts-container">
+        {% if workout_data %}
+            {% for key, value in workout_data.items() %} 
+                <h5> {{key}}: </h5>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th scope="col">Movement</th>
+                            <th scope="col"> Set # </th>
+                            <th scope="col"> Weight </th>
+                            <th scope="col"># of Reps</th>
+                        </tr>
+
+                        <style>
+                            .table th, .table td {
+                                width: 25%; /* Divide table width into three equal parts */
+                            }
+                        </style>
+                        
+                    </thead>
+
+                    <tbody>
+                        {% for mov in value %}
+                            <tr>
+                                <th scope="row">{{mov.movement_name}}</th>
+                                <td>{{mov.set_number}}</td>
+                                <td >{{mov.weight}}</th>
+                                <td>{{mov.reps}}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <br/>
+            {% endfor %}
+        {% endif %}
+    </div>
+    
+  
 
   <br />
   <br />
 
-  <!-- Your custom script -->
   <script>
     document.addEventListener('DOMContentLoaded', (event) => {
         let canvas = document.getElementById("sampleChart");
@@ -137,6 +238,69 @@
     
         // Parse the volume data for each movement
         let volumeData = JSON.parse('{{ volume_data | tojson | safe }}');
+        console.log(volumeData);
+
+        let maxLength = Math.max(...Object.values(volumeData).map(item => item.values.length));
+        // let count = Object.keys(volumeData).length; // Assuming you want to count the number of movements
+        const labels = Array.from({ length: maxLength }, (_, i) => i + 1); // Enumerate labels from 1 to count
+
+        let datasets = Object.keys(volumeData).map(movement => {
+            if (!volumeData[movement]) {
+                console.error('Missing data for movement:', movement);
+                return;
+            }
+            return {
+                label: movement,
+                data: volumeData[movement].values.map((value, index) => ({
+                    x: volumeData[movement].labels[index], // x is the date
+                    y: value // y is the volume
+                })),
+                borderColor: getRandomColor(),
+                backgroundColor: getRandomColor(),
+                fill: false
+            };
+        }).filter(dataset => dataset != null);
+
+
+        console.log(datasets);
+        new Chart(ctx, {
+            type: "line",
+            data: {
+                datasets: datasets,
+                labels: labels
+            },
+            options: {
+                scales: {
+                    x: {
+                        type: 'time',
+                        title: {
+                            display: true,
+                            text: 'Date'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Volume'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true
+                    }
+                }
+            }
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', (event) => {
+        let canvas = document.getElementById("sampleChart2");
+        let ctx = canvas.getContext('2d');
+    
+        // Parse the volume data for each movement
+        let volumeData = JSON.parse('{{ movement_volume_data | tojson | safe }}');
         console.log(volumeData);
 
         let maxLength = Math.max(...Object.values(volumeData).map(item => item.values.length));
@@ -213,7 +377,6 @@
         }
         return dates.reverse(); // Reverse to get the dates in ascending order
     }
-
     </script>
     
     

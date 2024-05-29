@@ -61,3 +61,6 @@ class Day:
     
     def __repr__(self) -> str:
         return f'{self.dt.strftime("%A")}, {self.dt.month} {self.dt.day}'
+    
+    def get_formatted_date(self):
+        return self.dt.strftime('%Y-%m-%d')

@@ -15,7 +15,7 @@ upload_workout = Blueprint('upload_workout', __name__)
 class StoredWorkout:
 
     def __init__(self) -> None:
-        pass
+        self.workout = None
     
     def setWorkout(self, w):
         self.workout = w
@@ -28,15 +28,19 @@ swkrt = StoredWorkout()
 @upload_workout.route('/upload-workout', methods=['GET', 'POST'])
 @login_required
 def upload():
-    swkrt.setWorkout(current_user.get_active_split().get_curr_workout())
-
+    if not swkrt.getStoredWorkout():
+        swkrt.setWorkout(current_user.get_active_split().get_curr_workout())
     if request.method == 'POST':
+        print(swkrt.getStoredWorkout())
+        print('hello')
         try:
             current_workout = swkrt.getStoredWorkout()
+            print(current_workout)
         except:
             flash('No workout is currently active.', category='error')
             return render_template("upload_workout.html", user=current_user)
 
+        print(current_workout)
         # Collect form data
         workout_data = []
         for m_index, movement in enumerate(current_workout.movements):
@@ -64,7 +68,6 @@ def upload():
         elif datetime.now() < get_all_day().day_time:
             flash('Cannot store workout data in the future! Please select a different day.', category='error')
         else:
-
         # Upload workout data:
             for data in workout_data:
                 new_data = WorkoutData(
@@ -74,7 +77,9 @@ def upload():
                     weight=int(data['weight']),
                     reps=int(data['reps']),
                     set_number=data['set'],
-                    user_id=current_user.id
+                    user_id=current_user.id,
+                    session_id = 0
+
                 )
                 db.session.add(new_data)
             new_note = Note(
@@ -90,28 +95,15 @@ def upload():
             # Update workout in split if uploaded workout matches the next workout in the split:
             if (swkrt.getStoredWorkout() == current_user.get_active_split().get_curr_workout()):
                 current_user.get_active_split().move_to_next_workout()
-
-
+        
+    
     return render_template("upload_workout.html", user=current_user, wrkt=swkrt.getStoredWorkout())
 
 @upload_workout.route('/download-template', methods=['GET', 'POST'])
 @login_required
 def download_template():
-    
     workout_name = request.form.get('workout_name')
     workout = Workout.query.filter_by(workout_name = workout_name, user_id = current_user.id).first()
     swkrt.workout = workout
-
-    # template = pd.DataFrame(columns = ['Movement', 'Weight', 'Reps', 'Set'])
-    # count = 0
-    # for movement in workout.movements:
-    #     for i in range(1, movement.sets + 1):
-    #         template.loc[count] = [movement.mov_name, 0, 0, i]
-    #         count += 1
-    # template_export = template.to_csv()
-
-    # buffer = BytesIO()
-    # buffer.write(template_export.encode())
-    # buffer.seek(0)
-
+    print(swkrt.getStoredWorkout())
     return render_template("upload_workout.html", user=current_user, wrkt= swkrt.getStoredWorkout())
