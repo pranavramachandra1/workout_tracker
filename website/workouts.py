@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, flash
+from flask import Blueprint, render_template, request, flash, redirect, url_for
 from flask_login import login_required, current_user
 from .models import Note
 import json
@@ -45,7 +45,25 @@ def splits():
         else:
             flash('Invalid number of movements.', category = 'error')
 
-    return render_template("splits.html", user = current_user)
+    return render_template("splits.html", user = current_user,
+                                          movement_names = current_user.get_all_movements())
+
+@workouts.route('/add-movement', methods=['GET', 'POST'])
+@login_required
+def add_movement():
+    mov_name = request.form['new_mov']
+    if not Movement.query.filter_by(user_id = current_user.id, mov_name = mov_name, reps = 0, sets = 0, workout_id = -1).all():
+        new_mov = Movement(user_id = current_user.id,
+                        mov_name = mov_name, 
+                        reps = 0,
+                        sets = 0,
+                        workout_id = -1)
+        db.session.add(new_mov)
+        db.session.commit()
+        flash('Movement added!', category='success')
+    else:
+        flash('Movement already exists.', category='error')
+    return redirect(url_for('workouts.splits'))
 
 def bool_int_check(str_input):
     try:

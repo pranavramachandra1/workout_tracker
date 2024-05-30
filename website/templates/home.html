@@ -153,7 +153,7 @@
     <div class="card card-style mb-2">
         <div class="card-body">
             <h3>Stats: Volume Tracker</h3>
-            <h5>Workout: {{current_view_workout.workout_name}}</h5>
+            <h5>Movement: {{movement_view_name}}</h5>
             <p>X Axis: Workout Number</p>
             <p>Y Axis: Volume (Volume = weight * reps * sets)</p>
         </div>
@@ -170,7 +170,7 @@
       <div class="form-group col-md-4">
           <label for="changeMovement"> Select a Movement to View: </label>
           <select id="changeMovement" class="form-control" name = "changeMovement" required>
-              <option value="" selected disabled>Choose a Workout</option>
+              <option value="" selected disabled>Choose a Movement</option>
               {% for m in movement_names %}
                   <option> {{ m }} </option>
               {% endfor %}

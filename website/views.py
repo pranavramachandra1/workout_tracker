@@ -97,7 +97,8 @@ def home():
                            current_day = current_day_display_dt, 
                            workout_data = workout_data,
                            workout_display_name = workout_display_name,
-                           movement_names = current_user.get_all_movements())
+                           movement_names = current_user.get_all_movements(),
+                           movement_view_name = movement_view_name)
 
 def get_current_month_data(workout_data, calendar):
     return [wd for wd in workout_data if wd.date.month == calendar.dt.month]
