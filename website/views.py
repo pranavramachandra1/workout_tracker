@@ -27,16 +27,23 @@ class SelectedWorkoutData:
     def __init__(self):
         self.workout_name = None
         self.workout_data = None
+        self.notes = None
     
     def set_data(self, data, name):
         self.workout_name = name
         self.workout_data = data
+
+    def set_notes(self, notes):
+        self.notes = notes
     
     def get_workout_data(self):
         return self.workout_data
 
     def get_workout_name(self):
         return self.workout_name
+
+    def get_workout_notes(self):
+        return self.notes
     
     def is_stored(self):
         if self.workout_data == None:
@@ -77,8 +84,8 @@ def home():
     current_day_display = f'{current_day_display_dt.month}/{current_day_display_dt.day}/{current_day_display_dt.year}'
     print(current_day_display)
     if stored_data.is_stored():
-        workout_data = current_user.get_last_workout_data(user_id=current_user.id)
-        print(workout_data)
+        workout_data, workout_notes = current_user.get_last_workout_data(user_id=current_user.id)
+        print(workout_notes)
         if current_user.get_last_workout():
             workout_display_name = current_user.get_last_workout().workout_name
         else:
@@ -86,6 +93,7 @@ def home():
     else:
         workout_data = stored_data.get_workout_data()
         workout_display_name = stored_data.get_workout_name()
+        workout_notes = stored_data.get_workout_notes()
 
     return render_template("home.html", 
                            user = current_user,
@@ -98,7 +106,8 @@ def home():
                            workout_data = workout_data,
                            workout_display_name = workout_display_name,
                            movement_names = current_user.get_all_movements(),
-                           movement_view_name = movement_view_name)
+                           movement_view_name = movement_view_name, 
+                           notes = workout_notes)
 
 def get_current_month_data(workout_data, calendar):
     return [wd for wd in workout_data if wd.date.month == calendar.dt.month]
@@ -180,9 +189,12 @@ def get_workout_date_from_index(user_id, index, date):
             return None
         dates = [q.date for q in query]
         ordered_dates = list(dict.fromkeys(dates))
-
         # Ensure that index exists within ordered_dates
         assert(index < len(ordered_dates))
+
+        notes = Note.query.filter_by(user_id = current_user.id, date = ordered_dates[index]).first().data
+        stored_data.set_notes(notes)
+
         return current_user.get_workout_from_id_date(ordered_dates[index])
 
 @views.route('/increase-day', methods=['GET', 'POST'])

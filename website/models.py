@@ -4,6 +4,8 @@ from sqlalchemy.sql import func
 from sqlalchemy import JSON
 from sqlalchemy import extract, desc, asc
 from flask_login import login_required, current_user
+from collections import OrderedDict
+
 
 split_workout = db.Table('split_workout',
     db.Column('split_id', db.Integer, db.ForeignKey('split.id'), primary_key=True),
@@ -98,7 +100,8 @@ class User(db.Model, UserMixin):
             return
         last_date = last_workout_data.date
         query = WorkoutData.query.filter_by(user_id = user_id, date = last_date).all()
-        return self.process_workout_data(query)
+        notes = Note.query.filter_by(user_id = self.id, date = last_date).first().data
+        return self.process_workout_data(query), notes
     
     def get_last_workout(self):
         if not WorkoutData.query.filter_by(user_id = self.id).order_by(desc(WorkoutData.date)).first():
@@ -112,5 +115,6 @@ class User(db.Model, UserMixin):
         return self.process_workout_data(query)
     
     def get_all_movements(self):
-        movs = Movement.query.filter_by(user_id = self.id).order_by(asc(Movement.mov_name)).all()
-        return [m.mov_name for m in movs]
+        movs = Movement.query.filter_by(user_id = self.id).order_by(asc(Movement.mov_name)).distinct().all()
+        mov_names = [m.mov_name for m in movs]
+        return list(OrderedDict.fromkeys(mov_names))
